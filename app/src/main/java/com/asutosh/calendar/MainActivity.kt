@@ -53,11 +53,12 @@ class MainActivity : AppCompatActivity() {
 
         custCalendarView.enableAllDays()
         //custCalendarView.setEnabledDates(listSelectedDates)
-        //custCalendarView.setMinDate(Calendar.getInstance())
+        custCalendarView.setMinDate(Calendar.getInstance())
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.MONTH,8)
         calendar.set(Calendar.DAY_OF_MONTH,12)
         custCalendarView.setMaxDate(calendar)
+        custCalendarView.setDisabledDay(CustomCalendarView.Days.FRIDAY)
         custCalendarView.setUpCalendar()
         var context=this
         custCalendarView.setOnDateSelectedListener(object : CustomCalendarView.OnDateSelected {

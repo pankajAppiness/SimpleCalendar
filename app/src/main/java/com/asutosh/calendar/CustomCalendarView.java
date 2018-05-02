@@ -1,5 +1,6 @@
 package com.asutosh.calendar;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.asutosh.calendar.Bean.CalendarDateInfo;
@@ -49,7 +51,7 @@ public class CustomCalendarView extends LinearLayout {
 
     public CustomCalendarView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
-
+        this.context=context;
         setOrientation(LinearLayout.VERTICAL);
         setGravity(Gravity.CENTER);
         LayoutInflater.from(context).inflate(R.layout.layout_custom_calendar_view, this, true);
@@ -58,6 +60,12 @@ public class CustomCalendarView extends LinearLayout {
         ivLeftArrow = findViewById(R.id.imv_left_arrow);
         ivRightArrow = findViewById(R.id.imv_right_arrow);
 
+        tv_month.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showYearPickerDialogue();
+            }
+        });
         initializeViews();
     }
 
@@ -110,7 +118,7 @@ public class CustomCalendarView extends LinearLayout {
         listDates.clear();
         month_name = month_date.format(calendar.getTime());
         days_in_current_month = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        String year = new SimpleDateFormat("YYYY").format(calendar.getTime());
+        String year = new SimpleDateFormat("yyyy").format(calendar.getTime());
         tv_month.setText(month_name + " " + year);
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
         for (int i = 1; i < calendar.get(Calendar.DAY_OF_WEEK); i++) {
@@ -296,8 +304,14 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private void enableDisableLeftRightArrow() {
-        ivLeftArrow.setEnabled(!isCurrentMinMonth());
-        ivRightArrow.setEnabled(!isCurrentMaxMonth());
+        if(isCurrentMinMonth())
+            ivLeftArrow.setVisibility(View.INVISIBLE);
+        else
+            ivLeftArrow.setVisibility(View.VISIBLE);
+        if(isCurrentMaxMonth())
+        ivRightArrow.setVisibility(View.INVISIBLE);
+        else
+            ivRightArrow.setVisibility(View.VISIBLE);
     }
 
     private boolean isCurrentMinMonth() {
@@ -322,5 +336,18 @@ public class CustomCalendarView extends LinearLayout {
         if (calendar != null)
             return new SimpleDateFormat("yyyyMMdd").format(calendar.getTime());
         return "";
+    }
+
+    private void showYearPickerDialogue()
+    {
+        NumberPickerDialog newFragment = new NumberPickerDialog();
+        newFragment.setValueChangeListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+
+            }
+        });
+
+        newFragment.show(((Activity)context).getFragmentManager(), "time picker");
     }
 }
