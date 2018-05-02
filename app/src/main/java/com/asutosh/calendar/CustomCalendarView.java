@@ -350,4 +350,10 @@ public class CustomCalendarView extends LinearLayout {
 
         newFragment.show(((Activity)context).getFragmentManager(), "time picker");
     }
+
+    public void setYear(int year)
+    {
+        calendar.set(Calendar.YEAR,year);
+        setUpCalendar();
+    }
 }
