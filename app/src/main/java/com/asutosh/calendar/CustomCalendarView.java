@@ -341,6 +341,7 @@ public class CustomCalendarView extends LinearLayout {
     private void showYearPickerDialogue()
     {
         NumberPickerDialog newFragment = new NumberPickerDialog();
+        newFragment.customCalendarView=this;
         newFragment.setValueChangeListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
