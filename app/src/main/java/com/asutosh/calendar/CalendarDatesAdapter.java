@@ -1,6 +1,7 @@
 package com.asutosh.calendar;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,9 +42,15 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter<CalendarDatesAdap
 
     @Override
     public void onBindViewHolder(Viewholder holder, final int position) {
+        holder.rbDate.setBackgroundResource(R.drawable.radio_back);
+        holder.rbDate.setTextColor(context.getResources().getColorStateList(R.color.radio_back_text));
         holder.rbDate.setEnabled(listDate.get(position).isEnabled());
         holder.rbDate.setChecked(listDate.get(position).isChecked());
-        holder.rbDate.setText(String.valueOf(listDate.get(position).getDate().get(Calendar.DAY_OF_MONTH)));
+        if(!listDate.get(position).isChecked() && customCalendarView.equalsDate(listDate.get(position).getDate(),customCalendarView.calendarTodayDate))
+        {
+            holder.rbDate.setBackgroundResource(R.drawable.radio_todays_date);
+            holder.rbDate.setTextColor(Color.WHITE);
+        }holder.rbDate.setText(String.valueOf(listDate.get(position).getDate().get(Calendar.DAY_OF_MONTH)));
         holder.rbDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

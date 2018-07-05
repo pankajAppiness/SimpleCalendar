@@ -48,6 +48,7 @@ public class CustomCalendarView extends LinearLayout {
 
     Calendar MIN_DATE;
     Calendar MAX_DATE;
+    Calendar calendarTodayDate;
 
     public CustomCalendarView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
@@ -60,12 +61,12 @@ public class CustomCalendarView extends LinearLayout {
         ivLeftArrow = findViewById(R.id.imv_left_arrow);
         ivRightArrow = findViewById(R.id.imv_right_arrow);
 
-        tv_month.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showYearPickerDialogue();
-            }
-        });
+//        tv_month.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showYearPickerDialogue();
+//            }
+//        });
         initializeViews();
     }
 
@@ -109,6 +110,7 @@ public class CustomCalendarView extends LinearLayout {
         });
 
         calendar = Calendar.getInstance();
+        calendarTodayDate=Calendar.getInstance();
         month_date = new SimpleDateFormat("MMMM");
         calendar.add(Calendar.DAY_OF_MONTH, 1);
     }
@@ -228,6 +230,23 @@ public class CustomCalendarView extends LinearLayout {
         MAX_DATE = calendar;
     }
 
+    public void setMinDate(long date)
+    {
+        MIN_DATE=Calendar.getInstance();
+        MIN_DATE.setTimeInMillis(date);
+    }
+
+    public void setMaxDate(long date)
+    {
+        MAX_DATE=Calendar.getInstance();
+        MAX_DATE.setTimeInMillis(date);
+    }
+
+    public Calendar getCalendar()
+    {
+        return calendar;
+    }
+
     public void setOnDateSelectedListener(OnDateSelected onDateSelected) {
         this.onDateSelected = onDateSelected;
     }
@@ -325,10 +344,14 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private boolean isLowerThenMin(Calendar calendar) {
+        if(MIN_DATE==null)
+            return false;
         return convertDateToString(calendar).compareTo(convertDateToString(MIN_DATE)) < 0;
     }
 
     private boolean isHigherThenMax(Calendar calendar) {
+        if(MAX_DATE==null)
+            return false;
         return convertDateToString(calendar).compareTo(convertDateToString(MAX_DATE)) > 0;
     }
 

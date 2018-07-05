@@ -45,12 +45,12 @@ public class YearListAdapter extends RecyclerView.Adapter<YearListAdapter.Viewho
     @Override
     public void onBindViewHolder(Viewholder holder, final int position) {
         holder.tvYear.setText(String.valueOf(listDates.get(position)));
-        holder.llYear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                customCalendarView.setYear(listDates.get(position));
-            }
-        });
+//        holder.llYear.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                customCalendarView.setYear(listDates.get(position));
+//            }
+//        });
     }
 
     @Override
