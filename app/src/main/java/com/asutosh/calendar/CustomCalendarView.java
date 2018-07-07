@@ -32,15 +32,17 @@ public class CustomCalendarView extends LinearLayout {
     int thisMonth;
     Calendar calendar;
     Context context;
-    TextView tv_month;
+//    TextView tv_month;
     RecyclerView rv_dates;
-    ImageView ivLeftArrow;
-    ImageView ivRightArrow;
+//    ImageView ivLeftArrow;
+//    ImageView ivRightArrow;
 
     private Set<Days> setEnableOnlyDays;
     private Set<Days> setDisableOnlyDays;
     Set<Calendar> setEnabledDates;
     Set<Calendar> setDisabledDates;
+    int MULTI_SELECT_START_POSITION=-1;
+    int SELECTED_POSITION=-1;
     Calendar SELECTED_DATE;
     private boolean ENABLE_ALL_DAYS = true;
     ArrayList<CalendarDateInfo> listDates = new ArrayList<>();
@@ -56,10 +58,10 @@ public class CustomCalendarView extends LinearLayout {
         setOrientation(LinearLayout.VERTICAL);
         setGravity(Gravity.CENTER);
         LayoutInflater.from(context).inflate(R.layout.layout_custom_calendar_view, this, true);
-        tv_month = findViewById(R.id.tv_month);
+//        tv_month = findViewById(R.id.tv_month);
         rv_dates = findViewById(R.id.rv_dates);
-        ivLeftArrow = findViewById(R.id.imv_left_arrow);
-        ivRightArrow = findViewById(R.id.imv_right_arrow);
+//        ivLeftArrow = findViewById(R.id.imv_left_arrow);
+//        ivRightArrow = findViewById(R.id.imv_right_arrow);
 
 //        tv_month.setOnClickListener(new OnClickListener() {
 //            @Override
@@ -71,43 +73,54 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private void initializeViews() {
-        rv_dates.setLayoutManager(new GridLayoutManager(context, 7));
+        GridLayoutManager gridLayoutManager=new GridLayoutManager(context, 7);
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (position < listDates.size()) {
+                    if (listDates.get(position).isTitle())
+                        return 7;
+                }
+                return 1;
+            }
+        });
+        rv_dates.setLayoutManager(gridLayoutManager);
         adapter = new CalendarDatesAdapter(this, listDates, context);
         rv_dates.setAdapter(adapter);
-        ivRightArrow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showNextMonth();
-            }
-        });
-        ivLeftArrow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                showPreviousMonth();
-            }
-        });
-
-        rv_dates.setOnTouchListener(new OnSwipeTouchListener(context) {
-            public void onSwipeTop() {
-
-            }
-
-            public void onSwipeRight() {
-                if (!isCurrentMinMonth())
-                    showPreviousMonth();
-            }
-
-            public void onSwipeLeft() {
-                if (!isCurrentMaxMonth())
-                    showNextMonth();
-            }
-
-            public void onSwipeBottom() {
-
-            }
-
-        });
+//        ivRightArrow.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                showNextMonth();
+//            }
+//        });
+//        ivLeftArrow.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                showPreviousMonth();
+//            }
+//        });
+//
+//        rv_dates.setOnTouchListener(new OnSwipeTouchListener(context) {
+//            public void onSwipeTop() {
+//
+//            }
+//
+//            public void onSwipeRight() {
+//                if (!isCurrentMinMonth())
+//                    showPreviousMonth();
+//            }
+//
+//            public void onSwipeLeft() {
+//                if (!isCurrentMaxMonth())
+//                    showNextMonth();
+//            }
+//
+//            public void onSwipeBottom() {
+//
+//            }
+//
+//        });
 
         calendar = Calendar.getInstance();
         calendarTodayDate=Calendar.getInstance();
@@ -118,18 +131,33 @@ public class CustomCalendarView extends LinearLayout {
 
     public void setUpCalendar() {
         listDates.clear();
-        month_name = month_date.format(calendar.getTime());
+//        month_name = month_date.format(calendar.getTime());
+//        String year = new SimpleDateFormat("yyyy").format(calendar.getTime());
+//        tv_month.setText(month_name + " " + year);
+        setCalendarForMonth();
+        for(int i=0;i<12;i++) {
+            thisMonth++;
+            calendar = getCurrentDatePlusMonth(thisMonth);
+            setCalendarForMonth();
+        }
+        adapter.notifyDataSetChanged();
+//        enableDisableLeftRightArrow();
+    }
+
+    private void setCalendarForMonth()
+    {
         days_in_current_month = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        String year = new SimpleDateFormat("yyyy").format(calendar.getTime());
-        tv_month.setText(month_name + " " + year);
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+        Calendar calendarNew1 = Calendar.getInstance();
+        calendarNew1.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1);
+        listDates.add(new CalendarDateInfo(true,calendarNew1,true));
         for (int i = 1; i < calendar.get(Calendar.DAY_OF_WEEK); i++) {
             Calendar calendarNew = Calendar.getInstance();
             calendarNew.setTimeInMillis(calendar.getTimeInMillis());
             calendarNew.add(Calendar.MONTH, -1);
             calendarNew.set(Calendar.DAY_OF_MONTH,
                     calendarNew.getActualMaximum(Calendar.DAY_OF_MONTH) - (calendar.get(Calendar.DAY_OF_WEEK) - i - 1));
-            listDates.add(new CalendarDateInfo(false, calendarNew));
+            listDates.add(new CalendarDateInfo(false,false, calendarNew,true,false));
         }
         for (int i = 1; i <= days_in_current_month; i++) {
             Calendar calendarNew = Calendar.getInstance();
@@ -142,10 +170,8 @@ public class CustomCalendarView extends LinearLayout {
                 Calendar calendarNew = Calendar.getInstance();
                 calendarNew.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), i + 1);
                 calendarNew.add(Calendar.MONTH, 1);
-                listDates.add(new CalendarDateInfo(false, calendarNew));
+                listDates.add(new CalendarDateInfo(false,false, calendarNew,true,false));
             }
-        adapter.notifyDataSetChanged();
-        enableDisableLeftRightArrow();
     }
 
 
@@ -323,14 +349,14 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private void enableDisableLeftRightArrow() {
-        if(isCurrentMinMonth())
-            ivLeftArrow.setVisibility(View.INVISIBLE);
-        else
-            ivLeftArrow.setVisibility(View.VISIBLE);
-        if(isCurrentMaxMonth())
-        ivRightArrow.setVisibility(View.INVISIBLE);
-        else
-            ivRightArrow.setVisibility(View.VISIBLE);
+//        if(isCurrentMinMonth())
+//            ivLeftArrow.setVisibility(View.INVISIBLE);
+//        else
+//            ivLeftArrow.setVisibility(View.VISIBLE);
+//        if(isCurrentMaxMonth())
+//        ivRightArrow.setVisibility(View.INVISIBLE);
+//        else
+//            ivRightArrow.setVisibility(View.VISIBLE);
     }
 
     private boolean isCurrentMinMonth() {
@@ -355,6 +381,12 @@ public class CustomCalendarView extends LinearLayout {
         return convertDateToString(calendar).compareTo(convertDateToString(MAX_DATE)) > 0;
     }
 
+    public int compareDates(Calendar calendar1,Calendar calendar2)
+    {
+        if(calendar1==null || calendar2==null)
+            return -10000;
+        return convertDateToString(calendar1).compareTo(convertDateToString(calendar2));
+    }
     private String convertDateToString(Calendar calendar) {
         if (calendar != null)
             return new SimpleDateFormat("yyyyMMdd").format(calendar.getTime());
