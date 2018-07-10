@@ -14,6 +14,13 @@
         </activity>
         <activity android:name=".Main2Activity"></activity>
         <activity android:name=".CalendarViewActivity">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".calendarPerMonthItem.CalendarViewActivityNew">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -40,10 +41,11 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter{
     public class TitleViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvMonthNameTitle;
-
+        LinearLayout llCalendarDates;
         public TitleViewHolder(final View view) {
             super(view);
             tvMonthNameTitle=view.findViewById(R.id.tvMonthNameTitle);
+            llCalendarDates=view.findViewById(R.id.llCalendarDates);
         }
     }
 
