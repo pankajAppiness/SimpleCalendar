@@ -15,10 +15,11 @@ import com.asutosh.calendar.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CalendarDatesAdapter extends RecyclerView.Adapter {
+public class CalendarDatesAdapter extends RecyclerView.Adapter<CalendarDatesAdapter.TitleViewHolder> {
 
     private ArrayList<CalendarDateInfo> listDate;
     private Context context;
@@ -28,7 +29,7 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
     private Map<String, CalendarMonthInfo> mapCalendarMonthInfo;
     private List<String> listMonthNames;
 
-    private ArrayList<TitleViewHolder> listTitleViewHolder=new ArrayList<>();
+    private HashMap<Integer,TitleViewHolder> mapTitleViewHolder=new HashMap<>();
     public CalendarDatesAdapter(CustomCalendarView customCalendarView, ArrayList<CalendarDateInfo> listDate, Context context, Map<String, CalendarMonthInfo> mapCalendarMonthInfo, List<String> listMonthNames) {
         this.customCalendarView = customCalendarView;
         this.listDate = listDate;
@@ -43,6 +44,7 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
     public class DateViewholder extends RecyclerView.ViewHolder {
         public RadioButton rbDate;
         public LinearLayout lldate;
+        public Calendar calendar;
         public DateViewholder(View itemView) {
             super(itemView);
             rbDate = itemView.findViewById(R.id.rbDate);
@@ -71,7 +73,7 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public TitleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new TitleViewHolder(LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.rv_single_item_for_calendar_title_new, parent, false));
 
@@ -86,9 +88,8 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int positionMain) {
-        listTitleViewHolder.add((TitleViewHolder) viewHolder);
-        TitleViewHolder titleViewHolder = (TitleViewHolder) viewHolder;
+    public void onBindViewHolder(TitleViewHolder titleViewHolder, final int positionMain) {
+        mapTitleViewHolder.put(positionMain,titleViewHolder);
         titleViewHolder.tvMonthNameTitle.setText(listMonthNames.get(positionMain));
         CalendarMonthInfo calendarMonthInfo = mapCalendarMonthInfo.get(listMonthNames.get(positionMain));
         final List<CalendarDateInfo> listDate = calendarMonthInfo.getListCalendarDateInfo();
@@ -105,9 +106,11 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
         if (customCalendarView.SELECTED_ITEM_POSITION_IN_LIST == -1) {
             customCalendarView.SELECTED_ITEM_POSITION_IN_LIST = newSelectedItemPositionInList;
             customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
-            mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList)).getListCalendarDateInfo().
+            CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList));
+            calendarMonthInfo.getListCalendarDateInfo().
                     get(newSelectedItemPositionInCalendar).setChecked(true);
-            notifyItemChanged(newSelectedItemPositionInList);
+//            notifyItemChanged(newSelectedItemPositionInList);
+            updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(newSelectedItemPositionInList),newSelectedItemPositionInCalendar,newSelectedItemPositionInList);
         } else {
             if (customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST == -1 &&
                     (customCalendarView.SELECTED_ITEM_POSITION_IN_LIST<newSelectedItemPositionInList
@@ -116,6 +119,8 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
                     )) {
                 customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST = customCalendarView.SELECTED_ITEM_POSITION_IN_LIST;
                 customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_CALENDAR=customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR;
+                customCalendarView.SELECTED_ITEM_POSITION_IN_LIST = newSelectedItemPositionInList;
+                customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
                 for (int i = customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST; i <= newSelectedItemPositionInList; i++) {
                     CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(i));
                     int MAX_POSITION=i==newSelectedItemPositionInList?newSelectedItemPositionInCalendar:calendarMonthInfo.listCalendarDateInfo.size()-1;
@@ -125,45 +130,59 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
                             calendarMonthInfo.getListCalendarDateInfo().get(k).isEnabled()
 //                           && !calendarMonthInfo.getListCalendarDateInfo().get(i).isTitle()
                             ) {
+
                         calendarMonthInfo.getListCalendarDateInfo().get(k).setMultiSelected(true);
+                        if(mapTitleViewHolder.get(i).listAllDateViewholder.get(k).calendar==calendarMonthInfo.getListCalendarDateInfo().get(k).getDate())
+                        updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(i),k,i);
+
                     }
                 }
-                customCalendarView.SELECTED_ITEM_POSITION_IN_LIST = newSelectedItemPositionInList;
-                customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
+
 //                if(customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST==0 && newSelectedItemPositionInList==listMonthNames.size()-1)
 //                    notifyDataSetChanged();
 //                else
-                notifyItemRangeChanged(customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST, newSelectedItemPositionInList+1);
+//                notifyItemRangeChanged(customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST, newSelectedItemPositionInList+1);
 
             } else if (customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST != -1) {
 //                for (int i = customCalendarView.MULTI_SELECT_START_POSITION; i <= customCalendarView.SELECTED_POSITION; i++) {
 //                    listDate.get(i).setMultiSelected(false);
 //                }
-                for (int i = customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST; i <= customCalendarView.SELECTED_ITEM_POSITION_IN_LIST; i++) {
+                    int startPositionList=customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST;
+                    int startPositionCalendar=customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_CALENDAR;
+                    int selectedPositionList=customCalendarView.SELECTED_ITEM_POSITION_IN_LIST;
+                    int selectedPositionCalendar=customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR;
+                    customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST = -1;
+                    customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_CALENDAR = -1;
+                    customCalendarView.SELECTED_ITEM_POSITION_IN_LIST=newSelectedItemPositionInList;
+                    customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
+                for (int i = startPositionList; i <= selectedPositionList; i++) {
                     CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(i));
-                    int MAX_POSITION=i==customCalendarView.SELECTED_ITEM_POSITION_IN_LIST?customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR:calendarMonthInfo.listCalendarDateInfo.size()-1;
-                    int MIN_POSITION=i==customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST?customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_CALENDAR:0;
-                    for(int k=MIN_POSITION;k<=MAX_POSITION;k++)
-                            calendarMonthInfo.getListCalendarDateInfo().get(k).setMultiSelected(false);
+                    int MAX_POSITION=i==selectedPositionList?selectedPositionCalendar:calendarMonthInfo.listCalendarDateInfo.size()-1;
+                    int MIN_POSITION=i==startPositionList?startPositionCalendar:0;
+                    for(int k=MIN_POSITION;k<=MAX_POSITION;k++) {
+                        calendarMonthInfo.getListCalendarDateInfo().get(k).setMultiSelected(false);
+                        if(mapTitleViewHolder.get(i).listAllDateViewholder.get(k).calendar==calendarMonthInfo.getListCalendarDateInfo().get(k).getDate())
+                            updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(i),k,i);
+                    }
                 }
-                notifyItemRangeChanged(customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST, customCalendarView.SELECTED_ITEM_POSITION_IN_LIST);
+//                notifyItemRangeChanged(startPositionList, selectedPositionList);
 
 
-                mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList)).getListCalendarDateInfo()
+                CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList));
+                calendarMonthInfo.getListCalendarDateInfo()
                         .get(newSelectedItemPositionInCalendar).setChecked(true);
-                notifyItemChanged(newSelectedItemPositionInList);
+//                notifyItemChanged(newSelectedItemPositionInList);
+                updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(newSelectedItemPositionInList),newSelectedItemPositionInCalendar,newSelectedItemPositionInList);
 
 
-                customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_LIST = -1;
-                customCalendarView.MULTI_SELECT_ITEM_START_POSITION_IN_CALENDAR = -1;
-                customCalendarView.SELECTED_ITEM_POSITION_IN_LIST=newSelectedItemPositionInList;
-                customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
             } else {
                 customCalendarView.SELECTED_ITEM_POSITION_IN_LIST =newSelectedItemPositionInList;
                 customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR=newSelectedItemPositionInCalendar;
-                mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList)).getListCalendarDateInfo().
-                get(newSelectedItemPositionInCalendar).setChecked(true);
-                notifyItemChanged(newSelectedItemPositionInList);
+                CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(newSelectedItemPositionInList));
+                calendarMonthInfo.getListCalendarDateInfo().get(newSelectedItemPositionInCalendar).setChecked(true);
+                updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(newSelectedItemPositionInList),newSelectedItemPositionInCalendar,newSelectedItemPositionInList);
+
+//                notifyItemChanged(newSelectedItemPositionInList);
             }
         }
 
@@ -200,8 +219,9 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private void updateDate(final List<CalendarDateInfo> listDate,TitleViewHolder titleViewHolder,int position,final int positionMain)
+    private void updateDate(final List<CalendarDateInfo> listDate, TitleViewHolder titleViewHolder, final int position, final int positionMain)
     {
+        titleViewHolder.listAllDateViewholder.get(position).calendar=listDate.get(position).getDate();
         RadioButton rbDate = titleViewHolder.listAllDateViewholder.get(position).rbDate;
         titleViewHolder.listAllDateViewholder.get(position).lldate.setBackgroundColor(Color.TRANSPARENT);
         rbDate.setBackgroundResource(R.drawable.radio_back);
@@ -223,9 +243,11 @@ public class CalendarDatesAdapter extends RecyclerView.Adapter {
                     if (customCalendarView.SELECTED_ITEM_POSITION_IN_LIST != -1) {
 //                            listDate.get(SELECTED_POSITION).setChecked(false);
 //                            notifyItemChanged(SELECTED_POSITION);
-                        mapCalendarMonthInfo.get(listMonthNames.get(customCalendarView.SELECTED_ITEM_POSITION_IN_LIST)).getListCalendarDateInfo()
+                        CalendarMonthInfo calendarMonthInfo=mapCalendarMonthInfo.get(listMonthNames.get(customCalendarView.SELECTED_ITEM_POSITION_IN_LIST));
+                        calendarMonthInfo.getListCalendarDateInfo()
                                 .get(customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR).setChecked(false);
-                        notifyItemChanged(customCalendarView.SELECTED_ITEM_POSITION_IN_LIST);
+                        updateDate(calendarMonthInfo.getListCalendarDateInfo(),mapTitleViewHolder.get(customCalendarView.SELECTED_ITEM_POSITION_IN_LIST),customCalendarView.SELECTED_ITEM_POSITION_IN_CALENDAR,customCalendarView.SELECTED_ITEM_POSITION_IN_LIST);
+//                        notifyItemChanged(customCalendarView.SELECTED_ITEM_POSITION_IN_LIST);
                     }
                     setSelection(positionMain,selectedDatePosition);
                 }
